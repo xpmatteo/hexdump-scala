@@ -1,11 +1,12 @@
 #!/bin/bash
 
 set -e
+cd $(dirname $0)/..
 
 output=target
 
-mkdir -p $output 2> /dev/null
-scalac -d $output -cp 'lib/*' src/test/scala/*
+echo "Compiling..."
+script/compile.sh
 scala -cp 'lib/*:$output' org.scalatest.tools.Runner -o -R $output 
 
 
