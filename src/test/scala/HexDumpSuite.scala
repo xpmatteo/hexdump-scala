@@ -6,7 +6,7 @@ class HexDumpSuite extends FunSuite {
   
   test("return a list of chars") {
     val stream = new ByteArrayInputStream("abc".getBytes);
-    assert(List(97,98,99) == bytes(stream))
+    assert(List(97,98,99) === bytes(stream))
   }
   
   test("format num to hex") {
