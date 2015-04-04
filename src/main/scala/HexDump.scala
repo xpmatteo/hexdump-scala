@@ -1,5 +1,4 @@
 import java.io._
-import String._
 
 object HexDump {
   
@@ -19,17 +18,19 @@ object HexDump {
   def formatLine(n: Int, values: Seq[Int]) = f"$n%07x " + values.map(toHex).mkString(" ")
   
   def formatLines(numbersPerLine: Int, numbers: Seq[Int]): String = {
-    def f(numbers: Seq[Int], result: String, count: Int): String = {
+    def loop(numbers: Seq[Int], result: String, count: Int): String = {
       if (numbers.isEmpty)
         result + formatLine(count, numbers) + "\n"
-      else
-        f(
+      else {
+        val prefix = numbers.take(numbersPerLine)
+        loop(
           numbers.drop(numbersPerLine), 
-          result + formatLine(count, numbers.take(numbersPerLine)) + "\n", 
-          count + numbers.take(numbersPerLine).size)
+          result + formatLine(count, prefix) + "\n", 
+          count + prefix.size)
+      }
     }
     
-    f(numbers, "", 0)
+    loop(numbers, "", 0)
   }
   
   
