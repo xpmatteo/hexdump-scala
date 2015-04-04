@@ -22,7 +22,16 @@ object HexDump {
       List(values.take(n)) ::: split(n, values.drop(n))
   }
   
+  def toStream(fileName: String) = new FileInputStream(fileName)
+  
+  def formatLine(n: Int, values: List[Int]) = f"$n%07x " + values.map(toHex).mkString(" ")
+  
+  def formatLines(lines: List[List[Int]]): String = {
+    var count = 0
+    while (lines)
+  }
+  
 	def	main(args: Array[String]) {
-		println(bytes(new FileInputStream(args(0))).map(toHex).mkString(" "))
+		println(bytes(toStream(args(0))).map(toHex).mkString(" "))
 	}
 }

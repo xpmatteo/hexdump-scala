@@ -18,12 +18,21 @@ class HexDumpSuite extends FunSuite {
     assert(List("aa", "0a", "11") === List(170, 10, 17).map(toHex))
   }
 
-  test("format list to 3 columns") {
+  test("split list in groups of 3 columns") {
     assert(List() === split(3, List()));
     assert(List(List(1)) === split(3, List(1)));
     assert(List(List(1,2,3)) === split(3, List(1,2,3)));
     assert(List(List(1,2,3), List(4)) === split(3, List(1,2,3,4)));
     assert(List(List(1,2,3), List(4,5,6)) === split(3, List(1,2,3,4,5,6)))
   }
- 
+  
+  test("format one line") {
+    assert("0000021 10 11 12 04 05" === formatLine(33, List(16,17,18,4,5)))
+  }
+  
+  test("format two lines") {
+    val expected = "0000000 01 01 03\n0000003\n"
+    assert(expected === formatLines(List(List(1,2,3))))
+  }
+  
 }
