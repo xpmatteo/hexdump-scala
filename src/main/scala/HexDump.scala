@@ -26,12 +26,22 @@ object HexDump {
   
   def formatLine(n: Int, values: List[Int]) = f"$n%07x " + values.map(toHex).mkString(" ")
   
-  def formatLines(lines: List[List[Int]]): String = {
-    var count = 0
-    while (lines)
+  def formatLines(num: Int, numbers: List[Int]): String = {
+    formatLines(num, numbers, "", 0)
+  }
+  
+  def formatLines(num: Int, numbers: List[Int], result: String, count: Int): String = {
+    if (numbers.isEmpty)
+      return result + formatLine(count, numbers) + "\n"
+    else
+      return formatLines(
+        num, 
+        numbers.drop(num), 
+        result + formatLine(count, numbers.take(num)) + "\n", 
+        count + numbers.take(num).size)
   }
   
 	def	main(args: Array[String]) {
-		println(bytes(toStream(args(0))).map(toHex).mkString(" "))
+    print(formatLines(16, bytes(toStream(args(0)))))
 	}
 }
