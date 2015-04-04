@@ -33,7 +33,7 @@ object HexDump {
   }
   
   
-	def	main(args: Array[String]) {
+  def main(args: Array[String]) {
     print(formatLines(16, bytes(toStream(args(0)))))
-	}
+  }
 }
