@@ -19,13 +19,19 @@ class HexDumpSuite extends FunSuite {
   }
 
   test("format two lines") {
-    val expected = "0000000 01 02 03\n0000003 \n"
+    val expected = List("0000000 01 02 03", "0000003 ")
     assert(expected === formatLines(3, List(1,2,3)))
   }
   
   test("format three lines") {
-    val expected = "0000000 00 01\n0000002 02 03\n0000004 04\n0000005 \n"
+    val expected = List("0000000 00 01", "0000002 02 03", "0000004 04", "0000005 ")
     assert(expected === formatLines(2, List(0,1,2,3,4)))
   }
-  
+ 
+  test("format an infinite stream") {
+    def foreverZero: Stream[Int] = 0 #:: foreverZero
+    val expected = List("0000000 00 00", "0000002 00 00", "0000004 00 00")
+    assert(expected === formatLines(2, foreverZero).take(3))
+  }
+
 }

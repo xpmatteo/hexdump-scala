@@ -10,31 +10,28 @@ object HexDump {
       c #:: bytes(stream)
   }
 
-  def toHex(x: Int) = f"$x%02x"
-  
   def toStream(fileName: String) = 
     new BufferedInputStream(new FileInputStream(fileName))
   
+  def toHex(x: Int) = f"$x%02x"
+
   def formatLine(n: Int, values: Seq[Int]) = f"$n%07x " + values.map(toHex).mkString(" ")
   
-  def formatLines(numbersPerLine: Int, numbers: Seq[Int]): String = {
-    def loop(numbers: Seq[Int], result: String, count: Int): String = {
+  def formatLines(numbersPerLine: Int, numbers: Seq[Int]): Stream[String] = {
+    def loop(numbers: Seq[Int], count: Int): Stream[String] = {
       if (numbers.isEmpty)
-        result + formatLine(count, numbers) + "\n"
+        formatLine(count, numbers) #:: Stream.empty
       else {
         val prefix = numbers.take(numbersPerLine)
-        loop(
-          numbers.drop(numbersPerLine), 
-          result + formatLine(count, prefix) + "\n", 
-          count + prefix.size)
+        formatLine(count, prefix) #:: loop(numbers.drop(numbersPerLine), count + prefix.size)
       }
     }
     
-    loop(numbers, "", 0)
+    loop(numbers, 0)
   }
   
   
   def main(args: Array[String]) {
-    print(formatLines(16, bytes(toStream(args(0)))))
+    formatLines(16, bytes(toStream(args(0)))).foreach(println)
   }
 }
