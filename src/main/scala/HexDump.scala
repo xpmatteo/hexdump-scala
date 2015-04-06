@@ -2,22 +2,23 @@ import java.io._
 
 object HexDump {
   
-  def bytes(stream: InputStream): Stream[Int] = {
-    val c = stream.read
-    if (c == -1)
-      Stream.empty
-    else
-      c #:: bytes(stream)
-  }
-
-  def toStream(fileName: String) = 
+  val toJavaStream = (fileName: String) => 
     new BufferedInputStream(new FileInputStream(fileName))
   
-  def toHex(x: Int) = f"$x%02x"
+  val bytes: InputStream => Stream[Int] = 
+    stream => {
+      val c = stream.read
+      if (c == -1)
+        Stream.empty
+      else
+        c #:: bytes(stream)
+    }
+
+  val toHex = (x: Int) => f"$x%02x"
 
   def formatLine(n: Int, values: Seq[Int]) = f"$n%07x " + values.map(toHex).mkString(" ")
   
-  def formatLines(numbersPerLine: Int, numbers: Seq[Int]): Stream[String] = {
+  def formatLines(numbersPerLine: Int) = (numbers: Seq[Int]) => {
     def loop(numbers: Seq[Int], count: Int): Stream[String] = {
       if (numbers.isEmpty)
         formatLine(count, numbers) #:: Stream.empty
@@ -30,8 +31,10 @@ object HexDump {
     loop(numbers, 0)
   }
   
+  val hexdump = toJavaStream andThen bytes andThen formatLines(16)
+  
   
   def main(args: Array[String]) {
-    formatLines(16, bytes(toStream(args(0)))).foreach(println)
+    hexdump(args(0)).foreach(println)
   }
 }
