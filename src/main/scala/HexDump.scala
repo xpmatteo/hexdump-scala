@@ -5,33 +5,51 @@ object HexDump {
   val toJavaStream = (fileName: String) => 
     new BufferedInputStream(new FileInputStream(fileName))
   
-  val bytes: InputStream => Stream[Int] = 
+  val toScalaStream: InputStream => Stream[Int] = 
     stream => {
       val c = stream.read
       if (c == -1)
         Stream.empty
       else
-        c #:: bytes(stream)
+        c #:: toScalaStream(stream)
     }
+
+  def split[A,B](f: A=>B, g: A=>B) = (x:A) => (f(x), g(x))
+
+  val merge: (Seq[String], Seq[String]) => Stream[String] = 
+  (a,b) => 
+    if (a.isEmpty && b.isEmpty)
+      Stream.empty
+    else if (a.isEmpty)
+      b.head #:: merge(Nil, b.tail)
+    else if (b.isEmpty)
+      a.head #:: merge(a.tail, Nil)
+    else
+      (a.head + " " + b.head) #:: merge(a.tail, b.tail)
+  
+  def byteCounts: Seq[Int] => Stream[String] = s =>
+  {
+    def loop(count: Int, s: Seq[Int]): Stream[String] = 
+      if (s.isEmpty)
+        f"$count%07x" #:: Stream.empty
+      else 
+        f"$count%07x" #:: loop(count + s.take(16).length, s.drop(16))
+ 
+    loop(0, s)
+  }
 
   val toHex = (x: Int) => f"$x%02x"
+  
+  val byteDumps: Seq[Int] => Stream[String] = 
+    s =>
+    if (s.isEmpty) 
+      Stream.empty 
+    else
+      s.take(16).map(toHex).mkString(" ") #:: byteDumps(s.drop(16))
 
-  def formatLine(n: Int, values: Seq[Int]) = f"$n%07x " + values.map(toHex).mkString(" ")
+  val formatLines = split(byteCounts, byteDumps) andThen merge.tupled
   
-  def formatLines(numbersPerLine: Int) = (numbers: Seq[Int]) => {
-    def loop(numbers: Seq[Int], count: Int): Stream[String] = {
-      if (numbers.isEmpty)
-        formatLine(count, numbers) #:: Stream.empty
-      else {
-        val prefix = numbers.take(numbersPerLine)
-        formatLine(count, prefix) #:: loop(numbers.drop(numbersPerLine), count + prefix.size)
-      }
-    }
-    
-    loop(numbers, 0)
-  }
-  
-  val hexdump = toJavaStream andThen bytes andThen formatLines(16)
+  val hexdump = toJavaStream andThen toScalaStream andThen formatLines
   
   
   def main(args: Array[String]) {
